@@ -1,0 +1,39 @@
+# Every morning: pull new ReliefWeb reports, extract facts with Gemini, store in BigQuery.
+# Needs repository secrets GEMINI_API_KEY, GCP_SA_KEY (service account JSON) and BQ_PROJECT.
+name: daily-run
+on:
+  schedule:
+    - cron: "0 5 * * *"   # 05:00 UTC = 08:00 Gaza
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Reports to fetch"
+        default: "20"
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    env:
+      HAS_SECRETS: ${{ secrets.GEMINI_API_KEY != '' && secrets.GCP_SA_KEY != '' }}
+    steps:
+      - name: Check secrets
+        if: env.HAS_SECRETS != 'true'
+        run: echo "::notice::Set GEMINI_API_KEY, GCP_SA_KEY and BQ_PROJECT secrets to enable the daily run."
+      - uses: actions/checkout@v4
+        if: env.HAS_SECRETS == 'true'
+      - uses: actions/setup-python@v5
+        if: env.HAS_SECRETS == 'true'
+        with:
+          python-version: "3.12"
+      - uses: google-github-actions/auth@v2
+        if: env.HAS_SECRETS == 'true'
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - name: Run pipeline
+        if: env.HAS_SECRETS == 'true'
+        run: |
+          pip install -e ".[bigquery]"
+          python -m reports_tracker run --llm gemini --store bigquery --limit ${{ inputs.limit || '20' }}
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          BQ_PROJECT: ${{ secrets.BQ_PROJECT }}
+          RELIEFWEB_APPNAME: ${{ secrets.RELIEFWEB_APPNAME }}

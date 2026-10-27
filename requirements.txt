@@ -1,0 +1,10 @@
+requests>=2.31
+pydantic>=2.6
+pypdf>=4.0
+duckdb>=1.0
+pandas>=2.0
+streamlit>=1.35
+altair>=5
+google-cloud-bigquery>=3.20
+db-dtypes>=1.2
+pytest>=8

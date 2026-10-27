@@ -1,0 +1,30 @@
+[project]
+name = "reports-tracker"
+version = "0.1.0"
+description = "Turn humanitarian PDF reports into structured, verified data with Gemini or a local model"
+requires-python = ">=3.10"
+dependencies = [
+  "requests>=2.31",
+  "pydantic>=2.6",
+  "pypdf>=4.0",
+  "duckdb>=1.0",
+  "pandas>=2.0",
+]
+
+[project.optional-dependencies]
+bigquery = ["google-cloud-bigquery>=3.20", "db-dtypes>=1.2"]
+app = ["streamlit>=1.35", "altair>=5"]
+dev = ["pytest>=8"]
+
+[project.scripts]
+reports-tracker = "reports_tracker.pipeline:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
